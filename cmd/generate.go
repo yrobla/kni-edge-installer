@@ -15,6 +15,10 @@
 package cmd
 
 import (
+    "io/ioutil"
+    "os"
+
+
 	"github.com/spf13/cobra"
     "github.com/yrobla/kni-edge-installer/pkg/generator"
 )
@@ -39,8 +43,19 @@ to quickly create a Cobra application.`,
         secrets_repository, _ := cmd.Flags().GetString("secrets_repository")
         settings_path, _ := cmd.Flags().GetString("settings_path")
 
+        // Check if build path exists, create if not
+        build_path, _ := cmd.Flags().GetString("build_path")
+        if len(build_path) == 0 {
+            // will generate a temporary directory
+            build_path, _ = ioutil.TempDir("/tmp", "kni")
+        } else {
+            // remove if exists, recreate
+            os.RemoveAll(build_path)
+            os.MkdirAll(build_path, 0775)
+        }
+
         // start generation process
-        g := generator.New(base_repo, base_path, installer_path, secrets_repository, settings_path)
+        g := generator.New(base_repo, base_path, installer_path, secrets_repository, settings_path, build_path)
         g.GenerateFromInstall()
 	},
 }
@@ -52,8 +67,8 @@ func init() {
     generateCmd.MarkFlagRequired("base_repository")
     generateCmd.Flags().StringP("base_path", "", "", "Path to the base config and manifests for the blueprint")
     generateCmd.MarkFlagRequired("base_path")
-    generateCmd.Flags().StringP("installer_path", "", "", "Path where openshift-install binary is stored")
-    generateCmd.MarkFlagRequired("installer_path")
+    generateCmd.Flags().StringP("installer_path", "", "https://github.com/openshift/installer/releases/download/v0.14.0/openshift-install-linux-amd64", "Path where openshift-install binary is stored")
+    generateCmd.Flags().StringP("build_path", "", "", "Directory to use as build path. If that not exists, the installer will generate a default directory")
 
 	generateCmd.Flags().StringP("secrets_repository", "", "", "Path to repository that contains secrets")
     generateCmd.MarkFlagRequired("secrets_repository")
