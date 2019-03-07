@@ -9,6 +9,7 @@ import (
     "text/template"
 
     getter "github.com/hashicorp/go-getter"
+    "gopkg.in/yaml.v2"
 )
 
 type generator struct {
@@ -96,16 +97,30 @@ func (g generator) GenerateFromInstall() {
         os.Exit(1)
     }
 
+    // parse settings file
+    yamlContent, err := ioutil.ReadFile(fmt.Sprintf("%s/settings.yaml", g.buildPath))
+    if err != nil {
+        log.Fatal(fmt.Sprintf("Error reading settings file: %s", err))
+        os.Exit(1)
+    }
+
+    siteSettings := &map[string]map[string]interface{}{}
+    err = yaml.Unmarshal(yamlContent, &siteSettings)
+    if err != nil {
+        log.Fatal(fmt.Sprintf("Error parsing settings yaml file: %s", err))
+    }
+    parsedSettings := (*siteSettings)["settings"]
+
     // Prepare the vars to be executed in the template
     var settings = map[string]string{
-        "baseDomain": "tt.testing",
-        "clusterName": "test",
-        "clusterCIDR": "cidr",
-        "clusterSubnetLength": "1",
-        "machineCIDR": "cidr",
-        "serviceCIDR": "cidr",
-        "SDNType": "sdn",
-        "libvirtURI": "libvirt",
+        "baseDomain": parsedSettings["baseDomain"].(string),
+        "clusterName": parsedSettings["clusterName"].(string),
+        "clusterCIDR": parsedSettings["clusterCIDR"].(string),
+        "clusterSubnetLength": fmt.Sprintf("%s", parsedSettings["clusterSubnetLength"].(int)),
+        "machineCIDR": parsedSettings["machineCIDR"].(string),
+        "serviceCIDR": parsedSettings["serviceCIDR"].(string),
+        "SDNType": parsedSettings["SDNType"].(string),
+        "libvirtURI": parsedSettings["libvirtURI"].(string),
         "pullSecret": "pull",
         "SSHKey": "key",
     }
