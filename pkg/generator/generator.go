@@ -6,6 +6,7 @@ import (
     "io/ioutil"
     "log"
     "os"
+    "text/template"
 
     getter "github.com/hashicorp/go-getter"
 )
@@ -24,7 +25,7 @@ func New(baseRepo string, basePath string, installerPath string, secretsRepo str
     return g
 }
 
-func (g generator) GenerateFromInstall() {
+func (g generator) DownloadArtifacts() {
     // Download installer for openshift
     log.Println("Downloading openshift-install binary")
     binaryPath := fmt.Sprintf("%s/openshift-install", g.buildPath)
@@ -46,13 +47,72 @@ func (g generator) GenerateFromInstall() {
     sEnc := base64.StdEncoding.EncodeToString(priv)
 
     finalUrl := fmt.Sprintf("%s?sshkey=%s", g.secretsRepo, sEnc)
-    log.Println(finalUrl)
     client = &getter.Client{Src: finalUrl, Dst: secretsPath, Mode: getter.ClientModeAny}
     err = client.Get()
     if err != nil {
-        log.Println(secretsPath)
         log.Fatal(fmt.Sprintf("Error downloading secrets repo: %s", err))
         os.Exit(1)
     }
     os.Chmod(secretsPath, 0700)
+
+    // Download the settings.yaml and place it on build directory
+    log.Println("Download settings file")
+    settingsBuildPath := fmt.Sprintf("%s/settings.yaml", g.buildPath)
+    client = &getter.Client{Src: g.settingsPath, Dst: settingsBuildPath, Mode: getter.ClientModeFile}
+    err = client.Get()
+    if err != nil {
+        log.Fatal(fmt.Sprintf("Error downloading settings.yaml: %s", err))
+        os.Exit(1)
+    }
+
+    // Clone the base repository with manifests
+    log.Println("Cloning the base repository with manifests")
+    baseBuildPath := fmt.Sprintf("%s/manifests", g.buildPath)
+    log.Println(g.basePath)
+    client = &getter.Client{Src: g.baseRepo, Dst: baseBuildPath, Mode: getter.ClientModeAny}
+    err = client.Get()
+    if err != nil {
+        log.Fatal(fmt.Sprintf("Error cloning base repository with manifests: %s", err))
+        os.Exit(1)
+    }
+
+}
+func settings(s string) string {
+    log.Println(s)
+    return "abc"
+}
+
+func (g generator) GenerateFromInstall() {
+    // First download the needed artifacts
+    g.DownloadArtifacts()
+
+    // Read install-config.yaml on the given path and parse it
+    manifestsPath := fmt.Sprintf("%s/manifests/%s", g.buildPath, g.basePath)
+    installPath := fmt.Sprintf("%s/install-config.yaml.go", manifestsPath)
+
+    t, err := template.New("install-config.yaml.go").ParseFiles(installPath)
+    if err != nil {
+        log.Fatal(fmt.Sprintf("Error reading install file: %s", err))
+        os.Exit(1)
+    }
+
+    // Prepare the vars to be executed in the template
+    var settings = map[string]string{
+        "baseDomain": "tt.testing",
+        "clusterName": "test",
+        "clusterCIDR": "cidr",
+        "clusterSubnetLength": "1",
+        "machineCIDR": "cidr",
+        "serviceCIDR": "cidr",
+        "SDNType": "sdn",
+        "libvirtURI": "libvirt",
+        "pullSecret": "pull",
+        "SSHKey": "key",
+    }
+    err = t.Execute(os.	Stdout, settings)
+
+    if err != nil {
+        log.Fatal(fmt.Sprintf("Error parsing template: %s", err))
+    }
+
 }
