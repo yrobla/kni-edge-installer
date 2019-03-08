@@ -56,7 +56,7 @@ to quickly create a Cobra application.`,
 
         // start generation process
         g := generator.New(base_repo, base_path, installer_path, secrets_repository, settings_path, build_path)
-        g.GenerateFromInstall()
+        g.GenerateManifests()
 	},
 }
 
