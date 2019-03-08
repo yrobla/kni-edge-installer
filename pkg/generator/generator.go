@@ -55,7 +55,6 @@ func (g Generator) DownloadArtifacts() {
 	rsaPrivateLocation := fmt.Sprintf("%s/.ssh/id_rsa", os.Getenv("HOME"))
 	priv, _ := ioutil.ReadFile(rsaPrivateLocation)
 	sEnc := base64.StdEncoding.EncodeToString(priv)
-
 	finalURL := fmt.Sprintf("%s?sshkey=%s", g.secretsRepo, sEnc)
 	client = &getter.Client{Src: finalURL, Dst: secretsPath, Mode: getter.ClientModeAny}
 	err = client.Get()

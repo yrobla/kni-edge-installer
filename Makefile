@@ -4,7 +4,7 @@ GOFILES=$(wildcard *.go)
 GONAME="kni-edge-installer"
 
 BUILDDIR = $(shell pwd)/build
-INSTALLER_GIT_REPO = https://github.com/openshift/installer
+INSTALLER_GIT_REPO = github.com/openshift/installer
 
 ifndef INSTALLER_PATH
 override INSTALLER_PATH = https://github.com/openshift/installer/releases/download/v0.14.0/openshift-install-linux-amd64
@@ -15,6 +15,11 @@ override INSTALLER_GIT_TAG = "v0.14.0"
 endif
 
 all: watch
+
+binary:
+	@echo
+	@echo "Building installer binary"
+	@./bin/$(GONAME) binary --build_path ${BUILDDIR} --installer_repository ${INSTALLER_GIT_REPO} --installer_tag ${INSTALLER_GIT_TAG}
 
 build:
 	@echo "Building kni-edge-installer with $(GOPATH) to ./bin"
