@@ -93,7 +93,7 @@ func (g generator) ReadSecretFiles(path string, info os.FileInfo, err error) err
     }
 
     if err != nil {
-        log.Fatal("Error traversing file: %s", err)
+        log.Fatal(fmt.Sprintf("Error traversing file: %s", err))
         os.Exit(1)
     }
 
