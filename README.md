@@ -92,7 +92,7 @@ The link pasted above, also contains the instructions to compile the installer w
 
 There are two different footprints for libvirt: 1 master/1 worker, and 3 masters/3 workers. Makefile needs to be called with:
 
-    make deploy CREDENTIALS=git@github.com:repo_user/repo_name.git SETTINGS=https://raw.githubusercontent.com/redhat-nfvpe/kni-edge-base/master/libvirt/sample_settings.yaml BASE_REPO=github.com/redhat-nfvpe/kni-edge-base.git BASE_PATH=[libvirt/3-node|libvirt/1-node]
+    make deploy CREDENTIALS=git@github.com:repo_user/repo_name.git SETTINGS=https://raw.githubusercontent.com/redhat-nfvpe/kni-edge-base/master/libvirt/sample_settings.yaml BASE_REPO=github.com/redhat-nfvpe/kni-edge-base.git BASE_PATH=[libvirt/3-node|libvirt/1-node] INSTALLER_PATH=file:///${GOPATH}/bin/openshift-install
 
 A sample settings.yaml file has been created specifically for Libvirt targets. It needs to look like:
 

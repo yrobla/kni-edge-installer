@@ -35,6 +35,10 @@ func BuildBinary(buildPath string, installerRepo string, installerTag string) {
 	}
 
 	installerPath := fmt.Sprintf("%s/go/src/github.com/openshift/installer", os.Getenv("HOME"))
+
+	// remove if already exists, clone again
+	os.RemoveAll(installerPath)
+
 	client := &getter.Client{Src: repoURL, Dst: installerPath, Mode: getter.ClientModeAny}
 	err := client.Get()
 
