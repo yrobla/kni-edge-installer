@@ -31,7 +31,7 @@ deploy:
 
 clean:
 	@echo "Destroying previous cluster"
-	@./bin/$(GONAME) clean $(BUILDDIR)
+	@./bin/$(GONAME) clean --build_path $(BUILDDIR)
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"

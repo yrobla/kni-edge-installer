@@ -34,12 +34,15 @@ var cleanCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// Check if build path exists, if not fail
 		buildPath, _ := cmd.Flags().GetString("build_path")
-		if len(buildPath) == 0 {
-			log.Fatal("Build directory does not exist. Stopping cleanup")
+
+		// check if metadata exists
+		metadataFile := fmt.Sprintf("%s/metadata.json", buildPath)
+		if _, err := os.Stat(metadataFile); os.IsNotExist(err) {
+			log.Fatal(fmt.Sprintf("Metadata file %s does not exist. Stopping cleanup", metadataFile))
 			os.Exit(1)
 		} else {
 			// launch cleanup command
-			cmd := exec.Command("openshift-install", "destroy", "cluster")
+			cmd := exec.Command("./openshift-install", "destroy", "cluster")
 			cmd.Dir = buildPath
 			cmd.Env = os.Environ()
 			cmd.Env = append(cmd.Env, fmt.Sprintf("GOPATH=%s/go", os.Getenv("HOME")))

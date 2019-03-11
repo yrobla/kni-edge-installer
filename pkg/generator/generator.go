@@ -178,7 +178,7 @@ func (g Generator) GenerateInstallConfig() {
 // CreateManifests creates the initial manifests for the cluster
 func (g Generator) CreateManifests() {
 	log.Println("Creating manifests")
-	cmd := exec.Command("openshift-install", "create", "manifests")
+	cmd := exec.Command("./openshift-install", "create", "manifests")
 	cmd.Dir = g.buildPath
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -190,7 +190,7 @@ func (g Generator) CreateManifests() {
 // DeployCluster starts deployment of the cluster
 func (g Generator) DeployCluster() {
 	log.Println("Deploying cluster")
-	cmd := exec.Command("openshift-install", "create", "cluster")
+	cmd := exec.Command("./openshift-install", "create", "cluster")
 	cmd.Dir = g.buildPath
 
 	var stdBuffer bytes.Buffer
