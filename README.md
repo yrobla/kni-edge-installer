@@ -113,6 +113,10 @@ Where:
 
 The rest of the options are exactly the same as in an AWS deployment.
 
+**Temporary workaround**
+
+Currently the installer is failing when adding console to the cluster for libvirt. In order to make it work, please follow instructions on [https://github.com/openshift/installer/pull/1371](https://github.com/openshift/installer/pull/1371).
+
 ## How to use the cluster
 
 After the deployment finishes, a `kubeconfig` file will be placed inside
