@@ -58,8 +58,8 @@ var cleanCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			log.Println(stdBuffer.String())
+			log.Println("Cluster cleaned successfully")
 		}
-		log.Println("Cluster cleaned successfully")
 
 	},
 }
