@@ -28,11 +28,16 @@ build:
 deploy:
 	@echo "Launching cluster deployment bin/$(GONAME)"
 	@./bin/$(GONAME) generate --installer_path $(INSTALLER_PATH) --build_path $(BUILDDIR) --base_repository $(BASE_REPO) --base_path $(BASE_PATH) --secrets_repository $(CREDENTIALS) --settings_path $(SETTINGS)
+
+clean:
+	@echo "Destroying previous cluster"
+	@./bin/$(GONAME) clean $(BUILDDIR)
+
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  build to produce the installer binary"
-	@echo "  deploy CREDENTIALS=<github_secret_repo> SETTINGS=<path_to_site_settings> BASE_REPO=<github_manifests_repo> BASE_PATH=<subpath_on_manifests_repo>"
-	@echo "  clean to destroy a previously created cluster and remove build contents"
 	@echo "  binary to generate a new openshift-install binary"
+	@echo "  build to produce the installer binary"
+	@echo "  clean to destroy a previously created cluster and remove build contents"
+	@echo "  deploy CREDENTIALS=<github_secret_repo> SETTINGS=<path_to_site_settings> BASE_REPO=<github_manifests_repo> BASE_PATH=<subpath_on_manifests_repo>"
 
 .PHONY: build get install run watch start stop restart clean
