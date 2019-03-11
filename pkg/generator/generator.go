@@ -159,8 +159,11 @@ func (g Generator) GenerateInstallConfig() {
 		"SDNType":             parsedSettings["SDNType"].(string),
 	}
 	// Settings depending on provider
-	if _, ok := parsedSettings["libvirtURI"]; ok {
-		settings["libvirtURI"] = parsedSettings["libvirtURI"].(string)
+	providerSettings := [2]string{"libvirtURI", "AWSRegion"}
+	for _, element := range providerSettings {
+		if _, ok := parsedSettings[element]; ok {
+			settings[element] = parsedSettings[element].(string)
+		}
 	}
 
 	// Merge with secrets dictionary
