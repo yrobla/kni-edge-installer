@@ -89,7 +89,9 @@ func (g Generator) DownloadArtifacts() {
 
 // ReadSecretFiles will traverse secrets directory and read content
 func (g Generator) ReadSecretFiles(path string, info os.FileInfo, err error) error {
-	var matches = map[string]string{"coreos-pull-secret": "pullSecret", "ssh-pub-key": "SSHKey"}
+	var matches = map[string]string{"coreos-pull-secret": "pullSecret",
+		"ssh-pub-key": "SSHKey", "aws-access-key-id": "aws-access-key-id",
+		"aws-secret-access-key": "aws-secret-access-key"}
 
 	if info.IsDir() && info.Name() == ".git" {
 		return filepath.SkipDir
@@ -178,6 +180,37 @@ func (g Generator) GenerateInstallConfig() {
 
 }
 
+// GenerateCredentials create the AWS credentials file if needed
+func (g Generator) GenerateCredentials() {
+	AWSKey, ok1 := g.secrets["aws-access-key-id"]
+	AWSSecret, ok2 := g.secrets["aws-secret-access-key"]
+
+	if ok1 && ok2 {
+		log.Println("Generating AWS credentials")
+		// generate aws creds file
+		settings := make(map[string]string)
+		settings["AWSKey"] = AWSKey
+		settings["AWSSecret"] = AWSSecret
+
+		// Create AWS credentials directory, or overwrite it
+		AWSPath := fmt.Sprintf("%s/.aws", os.Getenv("HOME"))
+		os.RemoveAll(AWSPath)
+		os.MkdirAll(AWSPath, 0700)
+
+		f, err := os.Create(fmt.Sprintf("%s/credentials", AWSPath))
+		if err != nil {
+			log.Fatal(fmt.Sprintf("Error opening the install file: %s", err))
+			os.Exit(1)
+		}
+		os.Chmod(fmt.Sprintf("%s/credentials", AWSPath), 0600)
+
+		t, err := template.New("aws").Parse("[default]\naws_access_key_id={{.AWSKey}}\naws_secret_access_key={{.AWSSecret}}")
+		err = t.Execute(f, settings)
+	} else {
+		log.Println("No secrets provided, skipping credentials creation")
+	}
+}
+
 // CreateManifests creates the initial manifests for the cluster
 func (g Generator) CreateManifests() {
 	log.Println("Creating manifests")
@@ -216,6 +249,9 @@ func (g Generator) GenerateManifests() {
 
 	// Generate install-config.yaml
 	g.GenerateInstallConfig()
+
+	// Generate credentials for AWS if needed
+	g.GenerateCredentials()
 
 	// Create manifests
 	g.CreateManifests()
